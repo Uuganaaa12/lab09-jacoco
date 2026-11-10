@@ -1,6 +1,8 @@
 package mn.edu.must.sqat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -132,5 +134,20 @@ class ScholarshipCalculatorTest {
     @Test
     void gpa_loopMany_95_85_75_65_returns2_5() {
         assertEquals(2.5, calc.gpa(new double[]{95, 85, 75, 65}), 1e-9);
+    }
+
+    // Heseg D: spec-iin zaag utguud
+    @ParameterizedTest(name = "letterGrade({0}) = {1}")
+    @CsvSource({
+            "60,    D",
+            "59.99, F",
+            "69.99, D",
+            "0,     F",
+            "100,   A",
+            "89.99, B",
+            "90,    A",
+    })
+    void letterGrade_boundaries(double score, String expected) {
+        assertEquals(expected, calc.letterGrade(score));
     }
 }
