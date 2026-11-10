@@ -68,3 +68,35 @@ cp target/site/jacoco/jacoco.csv results/jacoco-B.csv
 | 2+ удаа | `gpa_loopMany_95_85_75_65_returns2_5` | `gpa([95, 85, 75, 65]) == 2.5` |
 
 Эдгээр тест хамралтыг өсгөөгүй, учир нь давталтын орох, гарах салаа B-ийн тестүүдээр аль хэдийн хамрагдсан, гэхдээ хамралт салаа бүр дор хаяж нэг удаа дайрагдсан эсэхийг л хэмждэг, давталт 0, 1, олон удаа эргэхэд үр дүн зөв эсэхийг хэмждэггүй. Жишээ нь давталт эхний дүнг алгасдаг off-by-one алдаа гарвал `gpa([95]) == 4.0` тест 0 гэсэн хариугаар шууд унана, тиймээс давталтын заагийг хамралтаас үл хамааран тусад нь шалгах хэрэгтэй.
+
+## Хэсэг D: Зааг утга ба алдаа
+
+Спецификацийн зааг дээр `letterGrade_boundaries` (`@ParameterizedTest` + `@CsvSource`) 7 мөр нэмсэн: 60 -> D, 59.99 -> F, 69.99 -> D, 0 -> F, 100 -> A, 89.99 -> B, 90 -> A.
+
+```bash
+mvn test 2>&1 | tee results/mvn-test-D-fail.txt
+```
+
+[results/mvn-test-D-fail.txt](results/mvn-test-D-fail.txt): `Tests run: 30, Failures: 1`, BUILD FAILURE. Унасан нь CsvSource-ийн эхний мөр буюу `letterGrade(60)`:
+
+```
+[ERROR] mn.edu.must.sqat.ScholarshipCalculatorTest.letterGrade_boundaries(double, String)[1] -- Time elapsed: 0.012 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <D> but was: <F>
+```
+
+Спецификацийг кодтой мөр мөрөөр тулгахад 26-р мөр `if (score > 60) return "D";` нь 60 оноог D-д оруулдаггүй байсан, харин спецификацид "60-69.99 -> D" гэж байгаа. `score >= 60` болгож тусдаа commit-оор зассан (`a45fc99`, "letterGrade zasaw: score > 60 -> score >= 60, spec-eer 60 bol D").
+
+```bash
+mvn verify 2>&1 | tee results/mvn-verify-final.txt
+cp target/site/jacoco/jacoco.csv results/jacoco-final.csv
+```
+
+[results/mvn-verify-final.txt](results/mvn-verify-final.txt): `Tests run: 30, Failures: 0, Errors: 0, Skipped: 0`, BUILD SUCCESS. [results/jacoco-final.csv](results/jacoco-final.csv): BRANCH_MISSED 0, BRANCH_COVERED 41, LINE_MISSED 0, LINE_COVERED 25, Branch 41/41 = 100%, Line 25/25 = 100%.
+
+### Дүгнэлт
+
+B хэсгийн дараа branch хамралт 100% байсан ч энэ алдаа амьд үлдсэн, учир нь `score > 60` ба `score >= 60` хоёулаа яг ижил хоёр салаа үүсгэдэг бөгөөд миний тестүүд 65 (үнэн) ба 50 (худал) утгаар хоёр салааг хоёуланг нь дайрсан. Хоёр нөхцөл зөвхөн 60 гэсэн ганц утга дээр өөр хариу өгдөг тул зааг утга 60-ыг шалгасан тест л ялгааг илрүүлсэн. Хамралт аль мөр, аль салаа ажилласныг хэмждэг, харин тэр салаа зөв нөхцөлөөр сонгогдсон эсэх, буцаасан үр дүн спецификацитай таарч байгаа эсэхийг хэмждэггүй. Өөрөөр хэлбэл 100% хамралт нь "тест хүрээгүй код байхгүй" гэдгийг л баталдаг, "алдаа байхгүй" гэдгийг баталдаггүй. Тиймээс хамралтыг тест дутуу газрыг олох хэрэгсэл болгон ашиглаад, тестийн утгыг спецификацийн заагаас сонгох хэрэгтэй.
+
+## AI ашиглалт
+
+Тест бичих, README-ийн ноорог гаргахад Claude Code ашигласан. Тест бүрийг уншиж ойлгосон, README-ийн тоо бүрийг `results/` файлтай тулгаж шалгасан.
