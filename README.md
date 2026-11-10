@@ -56,3 +56,15 @@ cp target/site/jacoco/jacoco.csv results/jacoco-B.csv
 ```
 
 [results/mvn-verify-B.txt](results/mvn-verify-B.txt): `Tests run: 20, Failures: 0, Errors: 0, Skipped: 0`, A-гийн 5 дээр 15 нэмж нийт 20 тест шаардагдсан. [results/jacoco-B.csv](results/jacoco-B.csv): BRANCH_MISSED 0, BRANCH_COVERED 41, LINE_MISSED 0, LINE_COVERED 25, тэгэхээр Branch 41/41 = 100%, Line 25/25 = 100%.
+
+## Хэсэг C: Давталтын зааг
+
+`gpa()` доторх давталтад 0 / 1 / 2+ дүрмээр 3 тест нэмсэн:
+
+| Давталт | Тест | Шалгалт |
+|---|---|---|
+| 0 удаа | `gpa_loopZero_emptyAndNull_throw` | хоосон массив ба `null` хоёулаа `assertThrows(IllegalArgumentException)` |
+| 1 удаа | `gpa_loopOne_95_returns4` | `gpa([95]) == 4.0` |
+| 2+ удаа | `gpa_loopMany_95_85_75_65_returns2_5` | `gpa([95, 85, 75, 65]) == 2.5` |
+
+Эдгээр тест хамралтыг өсгөөгүй, учир нь давталтын орох, гарах салаа B-ийн тестүүдээр аль хэдийн хамрагдсан, гэхдээ хамралт салаа бүр дор хаяж нэг удаа дайрагдсан эсэхийг л хэмждэг, давталт 0, 1, олон удаа эргэхэд үр дүн зөв эсэхийг хэмждэггүй. Жишээ нь давталт эхний дүнг алгасдаг off-by-one алдаа гарвал `gpa([95]) == 4.0` тест 0 гэсэн хариугаар шууд унана, тиймээс давталтын заагийг хамралтаас үл хамааран тусад нь шалгах хэрэгтэй.
